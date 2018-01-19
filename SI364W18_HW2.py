@@ -11,14 +11,7 @@
 #############################
 ##### IMPORT STATEMENTS #####
 #############################
-
-from flask import Flask, request, render_template
-<<<<<<< HEAD
-import FlaskForm
-from wtforms import StringField, SubmitField, RadioField, ValidationError
-from wtforms.validators import Required
-
-=======
+from flask import Flask, request, render_template, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, RadioField, ValidationError
 from wtforms.validators import Required
@@ -27,7 +20,6 @@ from wtforms.validators import Required
 ##### APP SETUP #####
 #####################
 
->>>>>>> a6eb0a1... Add structure and import stmts necessary
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hardtoguessstring'
 
@@ -50,6 +42,20 @@ def hello_world():
 @app.route('/user/<name>')
 def hello_user(name):
     return '<h1>Hello {0}<h1>'.format(name)
+
+@app.route('/artistform')
+def artistform():
+	return render_template('artistform.html', artist = artist)
+
+@app.route('/artistinfo')
+def artistinfo():
+	baseurl = 'https://itunes.apple.com/search'
+	params_dict = {}
+	params['term'] = artistform.artist
+	resp = requests.get(baseurl, params = params_dict)
+	text = resp.text
+	data = json.loads(text)
+	return render_template('artist_info.html', objects = data)
 
 
 if __name__ == '__main__':
