@@ -29,7 +29,10 @@ app.config['SECRET_KEY'] = 'hardtoguessstring'
 ###### FORMS #######
 ####################
 
-
+class AlbumEntryForm(FlaskForm):
+	album_name = StringField('Enter the name of an album:', validators=[Required()])
+	like = RadioField('How much do you like this album? (1 low, 3 high)', choices=[('1', '1'),('2', '2'),('3', '3')], validators=[Required()])
+	submit = SubmitField('Submit')
 
 
 ####################
@@ -66,7 +69,25 @@ def artistlink():
 
 @app.route('/specific/song/<artist_name>')
 def song(artist_name):
-	return render_template('specific_artist.html')
+	params_dict = {'term': artist_name, 'entity': 'musicTrack', 'media': 'music'}
+	resp = requests.get('https://itunes.apple.com/search', params = params_dict)
+	text = resp.text
+	data = json.loads(text)['results']
+	return render_template('specific_artist.html', results = data)
+
+@app.route('/album_entry')
+def entry():
+	entryform = AlbumEntryForm()
+	return render_template('album_entry.html', form = entryform)
+
+@app.route('/album_result', methods = ['GET', 'POST'])
+def results():
+	form = AlbumEntryForm(request.form)
+	if request.method == 'POST' and form.validate_on_submit():
+		name = form.album_name.data
+		like = form.like.data
+		return render_template('album_data.html', album_name = name, like = like)
+	return redirect(url_for('entry'))
 
 if __name__ == '__main__':
     app.run(use_reloader=True,debug=True)
